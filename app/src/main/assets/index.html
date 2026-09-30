@@ -49,6 +49,13 @@ nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:re
 nav.tabs button{background:none;border:0;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted)}
 nav.tabs button svg{width:22px;height:22px}
 nav.tabs button[aria-selected="true"]{color:var(--ink);font-weight:700}
+nav.tabs{left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));padding-bottom:0;border:1px solid var(--line);border-radius:22px;background:linear-gradient(180deg,var(--surface),var(--surface2));box-shadow:0 10px 24px rgba(15,35,55,.22),0 2px 6px rgba(15,35,55,.12),inset 0 1px 0 rgba(255,255,255,.7)}
+nav.tabs .in{padding:6px}
+nav.tabs button{border-radius:16px;padding:7px 2px 8px;transition:transform .15s ease,background .15s ease,box-shadow .15s ease}
+nav.tabs button:active{transform:scale(.94)}
+nav.tabs button[aria-selected="true"]{color:#fff;background:linear-gradient(180deg,#2d6aa3,#1f4e78);box-shadow:0 6px 14px rgba(31,78,120,.45),inset 0 1px 0 rgba(255,255,255,.25);transform:translateY(-4px)}
+.app{padding-bottom:110px}
+.toast{bottom:calc(96px + env(safe-area-inset-bottom,0px))}
 section.view{display:flex;flex-direction:column;gap:14px;padding-top:14px}
 .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .h{font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px}
