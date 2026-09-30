@@ -14,6 +14,11 @@ import android.speech.RecognizerIntent;
 import org.json.JSONObject;
 import java.util.ArrayList;
 import android.util.Base64;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.os.SystemClock;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -41,12 +46,28 @@ public class MainActivity extends Activity {
     private ValueCallback<Uri[]> fileCallback;
     private WebChromeClient.FileChooserParams pendingParams;
     private Uri cameraUri;
+    private View splash;
+    private long startedAt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        startedAt = SystemClock.uptimeMillis();
         web = new WebView(this);
-        setContentView(web);
+        FrameLayout root = new FrameLayout(this);
+        root.addView(web, new FrameLayout.LayoutParams(-1, -1));
+
+        // Splash: the app logo on white, shown until the page has loaded
+        FrameLayout sp = new FrameLayout(this);
+        sp.setBackgroundColor(0xFFFFFFFF);
+        sp.setClickable(true);
+        ImageView logo = new ImageView(this);
+        logo.setImageResource(R.drawable.splash_logo);
+        int size = (int) (180 * getResources().getDisplayMetrics().density);
+        sp.addView(logo, new FrameLayout.LayoutParams(size, size, Gravity.CENTER));
+        root.addView(sp, new FrameLayout.LayoutParams(-1, -1));
+        splash = sp;
+        setContentView(root);
 
         assetLoader = new WebViewAssetLoader.Builder()
                 .addPathHandler("/assets/", new WebViewAssetLoader.AssetsPathHandler(this))
@@ -64,6 +85,11 @@ public class MainActivity extends Activity {
         web.addJavascriptInterface(new Bridge(), "AndroidBridge");
 
         web.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView view, String url) {
+                hideSplash();
+            }
+
             @Override
             public WebResourceResponse shouldInterceptRequest(WebView view, WebResourceRequest request) {
                 return assetLoader.shouldInterceptRequest(request.getUrl());
@@ -98,6 +124,17 @@ public class MainActivity extends Activity {
 
         if (savedInstanceState != null) web.restoreState(savedInstanceState);
         else web.loadUrl(HOME);
+        // safety: never keep the splash longer than 4 seconds
+        web.postDelayed(this::hideSplash, 4000);
+    }
+
+    private void hideSplash() {
+        if (splash == null) return;
+        final View sp = splash;
+        splash = null;
+        long wait = Math.max(0, 1300 - (SystemClock.uptimeMillis() - startedAt));
+        sp.postDelayed(() -> sp.animate().alpha(0f).setDuration(350)
+                .withEndAction(() -> sp.setVisibility(View.GONE)).start(), wait);
     }
 
     @Override
