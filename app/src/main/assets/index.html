@@ -48,6 +48,7 @@ nav.tabs{position:fixed;inset-inline:0;bottom:0;z-index:6;background:var(--surfa
 nav.tabs .in{max-width:640px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
 nav.tabs button{background:none;border:0;padding:8px 2px 9px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11.5px;color:var(--muted)}
 nav.tabs button svg{width:22px;height:22px}
+nav.tabs button{white-space:nowrap;min-width:0}
 
 .calbtn{border:1px solid var(--line);background:var(--surface);border-radius:12px;width:38px;height:38px;display:grid;place-items:center;flex:none;color:var(--ink)}
 .calbtn svg{width:20px;height:20px}
@@ -127,7 +128,12 @@ textarea#q{width:100%;padding-left:44px!important;min-height:74px;resize:vertica
 .tx{cursor:pointer}.invbtn{border:0;cursor:pointer;font:inherit;font-size:12px}
 .viewer .btn{font-size:14px}
 .tx .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff}
-.tx .mid{min-width:0}
+.tx .mid{min-width:0;display:block}
+.tx .t1{display:block}
+.tx .t2{flex-wrap:wrap}
+html,body{overflow-x:hidden;max-width:100%}
+.app{overflow-x:hidden}
+.kv .words,.words,.tx .t2 span{overflow-wrap:anywhere}
 .tx .t1{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .tx .t2{font-size:12px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .tx .amt{text-align:left;font-weight:700;white-space:nowrap}
@@ -337,7 +343,7 @@ var o=[];var l=Array.isArray(e);for(f=n.s.c;f<=n.e.c;++f)s[f]=ya(f);for(var c=n.
 <nav class="tabs" aria-label="بخش‌ها"><div class="in" role="tablist">
   <button role="tab" data-tab="home" aria-selected="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/><rect x="3" y="3" width="18" height="18" rx="5"/></svg>ثبت</button>
   <button role="tab" data-tab="tx" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 6h12M8 12h12M8 18h12"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>تراکنش‌ها</button>
-  <button role="tab" data-tab="months" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>ماه‌ها و تسویه</button>
+  <button role="tab" data-tab="months" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>ماه‌ها</button>
   <button role="tab" data-tab="cats" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v9l7 5"/><circle cx="12" cy="12" r="9"/></svg>دسته‌ها</button>
   <button role="tab" data-tab="set" aria-selected="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>تنظیمات</button>
 </div></nav>
