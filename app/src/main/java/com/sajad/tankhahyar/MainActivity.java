@@ -201,6 +201,37 @@ public class MainActivity extends Activity {
 
     /** Lets the page save Excel / backup files into the phone's Download folder. */
     private class Bridge {
+        /** Shares an invoice file (photo or PDF) through Android's share sheet. */
+        @JavascriptInterface
+        public boolean shareFile(String name, String base64, String mime, String text) {
+            try {
+                File dir = new File(getCacheDir(), "shared");
+                dir.mkdirs();
+                File[] old = dir.listFiles();
+                if (old != null) for (File f : old) f.delete();
+                File out = new File(dir, name);
+                try (FileOutputStream os = new FileOutputStream(out)) { os.write(Base64.decode(base64, Base64.DEFAULT)); }
+                Uri uri = FileProvider.getUriForFile(MainActivity.this, getPackageName() + ".fileprovider", out);
+                Intent send = new Intent(Intent.ACTION_SEND);
+                send.setType(mime);
+                send.putExtra(Intent.EXTRA_STREAM, uri);
+                if (text != null && !text.isEmpty()) send.putExtra(Intent.EXTRA_TEXT, text);
+                send.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                runOnUiThread(() -> startActivity(Intent.createChooser(send, "ارسال فاکتور")));
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        }
+
+        @JavascriptInterface
+        public void shareText(String text) {
+            Intent send = new Intent(Intent.ACTION_SEND);
+            send.setType("text/plain");
+            send.putExtra(Intent.EXTRA_TEXT, text);
+            runOnUiThread(() -> startActivity(Intent.createChooser(send, "ارسال فاکتور")));
+        }
+
         /** Opens Google's speech input (Persian); the text goes into the quick-entry box. */
         @JavascriptInterface
         public void startVoice() {

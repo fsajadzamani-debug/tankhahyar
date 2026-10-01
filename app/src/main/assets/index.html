@@ -124,6 +124,8 @@ textarea#q{width:100%;padding-left:44px!important;min-height:74px;resize:vertica
 .list{display:flex;flex-direction:column}
 .tx{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:10px 2px;border-bottom:1px solid var(--line);background:none;border-inline:0;border-top:0;text-align:right;width:100%}
 .tx:last-child{border-bottom:0}
+.tx{cursor:pointer}.invbtn{border:0;cursor:pointer;font:inherit;font-size:12px}
+.viewer .btn{font-size:14px}
 .tx .ic{width:36px;height:36px;border-radius:10px;display:grid;place-items:center;font-weight:800;font-size:14px;color:#fff}
 .tx .mid{min-width:0}
 .tx .t1{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -533,15 +535,15 @@ function txRow(t){
   const isC=t.kind==="charge";const c=isC?"var(--good)":catColor(t.cat);
   const letter=isC?"+":(t.cat||"؟").trim().split(" ").pop().charAt(0);
   const miss=!isC&&!t.img?'<span class="pill warn">بدون فاکتور</span>':"";
-  const has=!isC&&t.img?'<span class="pill good">📎 فاکتور</span>':"";
-  return `<button class="tx" data-id="${esc(t.id)}">
+  const has=!isC&&t.img?'<button type="button" class="pill good invbtn" aria-label="دیدن فاکتور">📎 فاکتور</button>':"";
+  return `<div class="tx" role="button" tabindex="0" data-id="${esc(t.id)}">
     <span class="ic" style="background:${c}">${esc(letter)}</span>
     <span class="mid"><span class="t1">${esc(isC?"شارژ تنخواه":(t.desc||t.cat||"هزینه"))}</span>
       <span class="t2"><span class="num">${esc(faNum(t.date))}</span>${isC?"":`<span>${esc(t.cat||"بدون دسته")}</span>`}${miss}${has}</span></span>
-    <span class="amt num ${isC?"in":""}">${isC?"+":""}${group(toman(t.rial))}<small>تومان</small></span></button>`;
+    <span class="amt num ${isC?"in":""}">${isC?"+":""}${group(toman(t.rial))}<small>تومان</small></span></div>`;
 }
 function sortTx(a){return a.slice().sort((x,y)=>(y.jy*400+y.jm*32+(+y.date.slice(8)))-(x.jy*400+x.jm*32+(+x.date.slice(8)))||(y.ts||0)-(x.ts||0))}
-function bindRows(root){root.querySelectorAll(".tx[data-id]").forEach(b=>b.addEventListener("click",()=>openForm(TX.find(t=>t.id===b.dataset.id))))}
+function bindRows(root,before){root.querySelectorAll(".tx[data-id]").forEach(b=>b.addEventListener("click",e=>{const t=TX.find(x=>x.id===b.dataset.id);if(!t)return;if(before)before();if(e.target.closest(".invbtn"))openInvoice(t);else openForm(t)}))}
 function monthOptions(sel,withAll){
   const L=ledger().filter(m=>m.active).reverse();
   const cur=sel.value;
@@ -816,9 +818,10 @@ function openForm(t){
     let prev="";if(newFile)prev=newFile.type.startsWith("image/")?`<img alt="" src="${URL.createObjectURL(newFile)}">`:`<span class="pill ink">PDF</span>`;else if(hasOld&&d.img==="local")prev=`<img alt="فاکتور" id="fdLocalImg" data-view="local">`;else if(hasOld)prev=`<span class="pill good">📎</span>`;
     box.innerHTML=`${prev}<div style="flex:1;min-width:0"><div class="small">${newFile?esc(newFile.name):hasOld?"فاکتور پیوست شده":"<span style='color:var(--warn)'>فاکتور پیوست نشده</span>"}</div>
       <div class="row" style="margin-top:4px"><label class="btn small">${hasOld||newFile?"تعویض":"📷 افزودن عکس/PDF"}<input type="file" id="fdFile" accept="image/*,application/pdf" hidden></label>
-      ${hasOld&&!newFile?`${d.img!=="local"?`<a class="btn small ghost" href="${esc(d.img)}" target="_blank" rel="noopener">باز کردن در درایو</a>`:""}<button class="btn small ghost" id="fdRm">حذف فاکتور</button>`:""}</div></div>`;
+      ${hasOld&&!newFile?`<button type="button" class="btn small" id="fdShare">↗ ارسال</button>${d.img!=="local"?`<a class="btn small ghost" href="${esc(d.img)}" target="_blank" rel="noopener">باز کردن در درایو</a>`:""}<button class="btn small ghost" id="fdRm">حذف فاکتور</button>`:""}</div></div>`;
     $("#fdFile").onchange=e=>{newFile=e.target.files[0]||null;drawImg()};
     const rm=$("#fdRm");if(rm)rm.onclick=()=>{removeImg=true;drawImg()};
+    const sh=$("#fdShare");if(sh)sh.onclick=()=>shareInvoice(d);
     const im=$("#fdLocalImg");if(im){IDB.get(d.id).then(b=>{if(b){if(b.type==="application/pdf"){im.replaceWith(Object.assign(document.createElement("span"),{className:"pill ink",textContent:"PDF"}))}else{im.src=URL.createObjectURL(b);im.onclick=()=>viewImg(im.src)}}}).catch(()=>{})}};
   drawImg();
   const close=()=>{layer.innerHTML=""};
@@ -990,7 +993,7 @@ function openCal(opt){
     $("#calToday").onclick=()=>{vy=t.jy;vm=t.jm;sel={jy:t.jy,jm:t.jm,jd:t.jd};if(opt.mode==="pick"){opt.onPick(fmtDate(sel));close()}else draw()};
     host.querySelectorAll(".cal-d[data-d]").forEach(b=>b.onclick=()=>{sel={jy:vy,jm:vm,jd:+b.dataset.d};
       if(opt.mode==="pick"){opt.onPick(fmtDate(sel));close()}else draw()});
-    const cl=$("#calList");if(cl)cl.querySelectorAll(".tx[data-id]").forEach(b=>b.addEventListener("click",()=>{close();openForm(TX.find(x=>x.id===b.dataset.id))}));
+    const cl=$("#calList");if(cl)bindRows(cl,close);
     const ca=$("#calAdd");if(ca)ca.onclick=()=>{const ds=fmtDate(sel);close();openForm(null);$("#fdDate").value=ds};
   };
   draw();
@@ -998,6 +1001,44 @@ function openCal(opt){
 function shortT(rial){const t=toman(rial);if(t>=1e6)return faNum((Math.round(t/1e5)/10).toString())+"م";if(t>=1e3)return faNum(Math.round(t/1e3))+"ه";return faNum(t)}
 $("#topCal").onclick=()=>openCal({mode:"browse",value:fmtDate(todayJ())});
 document.addEventListener("click",e=>{if(e.target.closest("#fdCal")){const inp=$("#fdDate");openCal({mode:"pick",value:inp.value,onPick:s=>{inp.value=s}})}});
+
+/* ---------------- invoice viewer + share ---------------- */
+function invName(t,ext){return `فاکتور_${t.date.replace(/\//g,"-")}_${(t.cat||"هزینه").replace(/\s+/g,"_")}${ext}`}
+function invCaption(t){return `فاکتور ${t.desc||t.cat||""} — ${fT(t.rial)} — ${faNum(t.date)}${t.payee?" — "+t.payee:""}`}
+async function shareInvoice(t){
+  const cap=invCaption(t);
+  if(t.img&&t.img!=="local"){ // stored on Google Drive: share the link
+    const txt=cap+"\n"+t.img;
+    if(window.AndroidBridge&&AndroidBridge.shareText){AndroidBridge.shareText(txt);return}
+    if(navigator.share){navigator.share({text:txt}).catch(()=>{});return}
+    try{await navigator.clipboard.writeText(txt);toast("لینک فاکتور کپی شد")}catch(e){toast("ارسال در دسترس نیست")}return;
+  }
+  let b=null;try{b=await IDB.get(t.id)}catch(e){}
+  if(!b){toast("فایل فاکتور روی این گوشی پیدا نشد");return}
+  const ext=b.type==="application/pdf"?".pdf":".jpg";const name=invName(t,ext);
+  if(window.AndroidBridge&&AndroidBridge.shareFile){
+    const data=await b64(b);if(!AndroidBridge.shareFile(name,data,b.type||"image/jpeg",cap))toast("ارسال انجام نشد");return}
+  try{const f=new File([b],name,{type:b.type});if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f],text:cap});return}}catch(e){if(e&&e.name==="AbortError")return}
+  saveBlob(name,b);
+}
+async function openInvoice(t){
+  const v=document.createElement("div");v.className="viewer";
+  const close=()=>{v.remove()};
+  let body="";
+  if(t.img==="local"){
+    let b=null;try{b=await IDB.get(t.id)}catch(e){}
+    if(!b)body=`<div class="banner warn">فایل فاکتور روی این گوشی پیدا نشد.</div>`;
+    else if(b.type==="application/pdf")body=`<div class="banner" style="background:var(--surface);color:var(--fg)">📄 فاکتور PDF — برای دیدن، «ارسال» را بزنید و با برنامه PDF باز کنید.</div>`;
+    else body=`<img alt="فاکتور" src="${URL.createObjectURL(b)}">`;
+  }else body=`<div class="banner" style="background:var(--surface);color:var(--fg)">این فاکتور در گوگل درایو ذخیره شده است.</div><a class="btn" href="${esc(t.img)}" target="_blank" rel="noopener">باز کردن در درایو</a>`;
+  v.innerHTML=`<div class="small" style="color:#fff;text-align:center">${esc(invCaption(t))}</div>${body}
+    <div class="row" style="justify-content:center"><button class="btn primary" data-a="share">↗ ارسال</button><button class="btn" data-a="edit">ویرایش ثبت</button><button class="btn" data-a="close">بستن</button></div>`;
+  v.querySelector('[data-a="share"]').onclick=()=>shareInvoice(t);
+  v.querySelector('[data-a="edit"]').onclick=()=>{close();openForm(t)};
+  v.querySelector('[data-a="close"]').onclick=close;
+  v.onclick=e=>{if(e.target===v)close()};
+  document.body.appendChild(v);
+}
 
 window.tyBack=function(){const v=document.querySelector(".viewer");if(v){v.remove();return true}
   if($("#layer").innerHTML){$("#layer").innerHTML="";return true}
